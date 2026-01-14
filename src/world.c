@@ -258,6 +258,9 @@ void initialise_waves(game_world *world) {
 }
 
 void spawn_appropriate_wave(game_world *world) {
+    // test_spawn_wave(world);
+    // return;
+
     if (world->wave_count == MAX_WAVES) {
         world->is_game_won = true;
         world->time->time_of_win = world->time->total;

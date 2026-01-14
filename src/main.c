@@ -106,7 +106,6 @@ int main(int argc, char *argv[]) {
 
         waves(world, time, &wave_cooldown);
         update_player(world, &time);
-        //DEBUG
         black_magic(world);
 
         update_enemies(world, &time);

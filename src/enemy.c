@@ -15,13 +15,13 @@
 
 // spawns a test wave
 void test_spawn_wave(game_world *world) {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 12; i++) {
         spawn_enemy(world, TESLA);
     }
     for (int i = 0; i < 0; i++) {
         spawn_enemy(world, CHARGER);
     }
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 0; i++) {
         spawn_enemy(world, DRONE);
     }
     for (int i = 0; i < 0; i++) {
@@ -30,7 +30,7 @@ void test_spawn_wave(game_world *world) {
     for (int i = 0; i < 0; i++) {
         spawn_enemy(world, BOMBER);
     }
-    for (int i = 0; i < 0; i++) {
+    for (int i = 0; i < 5; i++) {
         spawn_enemy(world, CHASER);
     }
 
@@ -180,12 +180,6 @@ GROUP_DISCHARGE:
     When any member is hit, directly linked members create a small AoE. Two connected members form a new link and the hit member is disconnected.
 */
 
-
-// TODO:
-// when charge target dies, delete hurtbox and go stalk
-// charger also charges sub parts.
-
-// GROUP TESLA ORGY
 void update_tesla(game_world *world, enemy *enemy, time *time) {
     switch (enemy->tesla.state) {
         case TESLA_NONE: 
@@ -284,8 +278,11 @@ int get_uncharged_enemy_key(game_world *world) {
         if (enemy->type == TESLA) {
             continue;
         }
+
+        if (enemy->tesla.is_charged) {
+            continue;
+        }
         
-        // TODO: add seaching algorithm
         bool is_valid = true;
         for (int j = 0; j < teslas->tesla_count; j++) {
             if (teslas->tesla_list[j] == NULL) {
@@ -303,6 +300,7 @@ int get_uncharged_enemy_key(game_world *world) {
         }
 
         if (is_valid) {
+            enemy->tesla.is_charged = true;
             return enemy->key;
         }
     }
