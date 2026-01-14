@@ -10,7 +10,6 @@
 #include "world.h"
 #include "entity.h"
 #include "enemy.h"
-#include "entity.h"
 
 void draw_debug(time time, game_world *world) {
     int n = 10;
@@ -223,6 +222,7 @@ void update_draw_frame(game_world *world, time time) {
         }
 
         DrawCircleV(world->player.movement.position, PLAYER_RADIUS + 3, colour);
+
         //OBJECTS
         // draw_hitboxes(&world->objects);
         draw_hurtboxes(&world->objects);
@@ -246,9 +246,6 @@ void update_draw_frame(game_world *world, time time) {
                 draw_charger(world, enemy);
             }
         }   
-        draw_hurtboxes(&world->objects);
-        
-        // update_enemy_boxes(world);
 
         EndMode2D();
         
@@ -261,7 +258,6 @@ void update_draw_frame(game_world *world, time time) {
 
 void draw_chaser(enemy enemy) {
     if (enemy.chaser.state == CHASER_STALKING || enemy.chaser.state == CHASER_SCATTERING) {
-        DrawCircleV(enemy.movement.position, CHASER_RADIUS, PURPLE);
         DrawCircleV(enemy.movement.position, CHASER_RADIUS, PURPLE);
     } else if (enemy.chaser.state == CHASER_FLANKING) {
         DrawCircleV(enemy.movement.position, CHASER_RADIUS + 3, BLUE);

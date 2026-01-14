@@ -223,6 +223,7 @@ typedef struct charger_data {
 } charger_data;
 
 typedef enum tesla_state {
+    TESLA_NONE,
     TESLA_STALKING,
     TESLA_CHARGING
 } tesla_state;
@@ -236,9 +237,15 @@ typedef enum tesla_group_state {
 
 typedef struct tesla_data {
     tesla_state state;
-    tesla_group_state group_state;
     double stalking_duration;
+    enemy *charging_target;
+    int charge_hurtbox_key;
 } testla_data;
+
+typedef struct tesla_collective_data {
+    tesla_group_state state;
+    enemy *tesla_list[MAX_ENEMIES];
+} tesla_collective_data;
 
 struct enemy {
     bool is_active;
@@ -265,6 +272,7 @@ typedef struct enemies {
     int count;
     int enemy_keys;
     drone_collective_data drones;
+    tesla_collective_data teslas;
 } enemies;
 
 typedef struct world_objects {

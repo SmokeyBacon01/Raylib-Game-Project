@@ -85,7 +85,7 @@ void create_enemy(game_world *world, enemy *enemy, enemy_type type) {
             create_charger_weakpoint(enemy);
             break;
         case TESLA:
-            // create_tesla(world, enemy);
+            create_tesla(world, enemy);
     }
 }
 
@@ -140,7 +140,7 @@ void update_enemies(game_world *world, time *time) {
                 // silence compiler
                 break;
             case TESLA:
-                // update_tesla(world, enemy, time);
+                update_tesla(world, enemy, time);
                 break;
         }
         update_counter(&enemy->hitbox.invincible_duration, time);
@@ -172,16 +172,82 @@ GROUP_DISCHARGE:
     When any member is hit, directly linked members create a small AoE. Two connected members form a new link and the hit member is disconnected.
 */
 
+void update_tesla(game_world *world, enemy *enemy, time *time) {
+    switch (enemy->tesla.state) {
+        case TESLA_NONE: 
+            tesla_enter_stalking(world, enemy);
+            break;
+        case TESLA_STALKING:
+
+            break;
+        case TESLA_CHARGING:
+
+
+            break;
+    }
+}
+
+// change state into stalking
+void tesla_enter_stalking(game_world *world, enemy *enemy) {
+    enemy->tesla.state = TESLA_STALKING;
+    enemy->tesla.charge_hurtbox_key = create_circle_hurtbox(&world->objects, enemy->movement.position, TESLA_ATTACK_RADIUS, TESLA_ATTACK_TELEGRAPH, TESLA_STALKING_DURATION - TESLA_ATTACK_TELEGRAPH);
+}
+
+void tesla_exit_stalking(game_world *world, enemy *enemy, time *time) {
+    update_counter(&enemy->tesla.stalking_duration, time);
+    if (enemy->tesla.stalking_duration == 0) {
+        enemy->tesla.state = TESLA_CHARGING;
+    }
+}
+
+void tesla_enter_charging(game_world *world, enemy *enemy, time *time) {
+    enemy->tesla.state = TESLA_CHARGING;
+
+
+}
+
+// Yeah honestly I'm too lazy to get a better algorithm.
+// Time complexity of the search is O(n^2) lmao.
+enemy *get_uncharged_enemy(game_world *world) {
+    tesla_collective_data *teslas = &world->objects.enemies.teslas.tesla_list;
+    enemy *enemy_list = &world->objects.enemies.list;
+    
+    for (int i = 0; i < world->objects.enemies.count; i++) {
+        enemy enemy = enemy_list[i];
+        
+        if (!enemy.is_active) {
+            continue;
+        }
+
+        if (enemy.type == CHARGER_WEAKPOINT) {
+            continue;
+        }
+
+        if (enemy.type == TESLA) {
+            continue;
+        }
+
+        // TODO: add seaching algorithm
+    }
+}
+
 void create_tesla(game_world *world, enemy *enemy) {
     enemy->hitbox.health = TESLA_HEALTH;
     enemy->movement.position = find_laser_spawn(world);
     enemy->hitbox.circle.centre = enemy->movement.position;
-    enemy->hitbox.circle.radius = CHASER_RADIUS;
-    enemy->radius = CHASER_RADIUS;
-    enemy->knockback_coefficient = CHASER_KNOCKBACK_COEFFECIENT;
+    enemy->hitbox.circle.radius = TESLA_RADIUS;
+    enemy->radius = TESLA_RADIUS;
+    enemy->knockback_coefficient = TESLA_KNOCKBACK_COEFFECIENT;
 
     enemy->tesla.state = TESLA_STALKING;
-    enemy->tesla.group_state = TESLA_GROUP_NONE;
+    // TODO: add tesla to tesla_list, or construct the tesla_list.
+}
+
+void initialise_teslas(tesla_collective_data *teslas) {
+    teslas->state = TESLA_GROUP_NONE;
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        teslas->tesla_list[i] = NULL;
+    }
 }
 
 /////////////////////////////// CHARGER LOGIC ///////////////////////////////
@@ -1104,7 +1170,7 @@ void initialise_drones(drone_collective_data *drones) {
     drones->orbit_movement.position = Vector2Zero();
     drones->orbit_movement.velocity = Vector2Zero();
     drones->orbit_movement.acceleration = Vector2Zero();
-    for (int i = 0; i < MAX_ENEMIES; i++) {
+    for (int i = 0; i < MAX_DRONES; i++) {
         drones->drone_list[i] = NULL;
     }
 }

@@ -58,7 +58,6 @@ void create_drone(game_world *world, enemy *enemy);
 void initialise_drones(drone_collective_data *drones);
 void update_drone(game_world *world, enemy *enemy, time *time);
 void update_all_drones(game_world *world, time *time);
-void update_drone(game_world *world, enemy *enemy, time *time);
 void reset_drones(game_world *world);
 void update_drone_id(game_world *world);
 void drone_stalking_movement(game_world *world, enemy *enemy, time *time);
@@ -120,6 +119,13 @@ int get_charger_bounce_count(enemy *enemy);
 void charger_exit_charging(enemy *enemy);
 void charger_update_stunned(enemy *enemy, time *time);
 void charger_exit_stunned(enemy *enemy, time *time);
+
+// TESLAS
+void create_tesla(game_world *world, enemy *enemy);
+void update_tesla(game_world *world, enemy *enemy, time *time);
+void initialise_teslas(tesla_collective_data *teslas);
+void tesla_enter_stalking(game_world *world, enemy *enemy);
+void tesla_exit_stalking(game_world *world, enemy *enemy, time *time);
 
 // ENEMY UPDATES
 void kill_enemies(game_world *world);

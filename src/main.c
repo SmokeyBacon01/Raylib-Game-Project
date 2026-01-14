@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        update_title(world, &time);
         waves(world, time, &wave_cooldown);
 
 

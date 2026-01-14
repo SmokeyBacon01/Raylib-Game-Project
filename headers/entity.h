@@ -6,8 +6,6 @@ void update_player_movement(game_world *world, time *time);
 void normal_player_movement(game_world *world, time *time);
 void normal_player_hitbox_collision(game_world *world);
 
-void crouch_player_movement(game_world *world, time *time);
-
 void begin_player_dash(game_world *world);
 void dash_player_movement(game_world *world, time *time);
 void dash_player_hitbox_collision(game_world *world);
@@ -34,7 +32,6 @@ bool check_player_hurtbox_collision(world_objects objects, player player, time t
 bool check_collision_capsule_circle(Vector2 centre, double radius, capsule_data capsule);
 
 void update_player_health(world_objects *objects, player *player, time time);
-void update_player_invincibility(player *player, time time);
 
 Vector2 get_input_acceleration(void);
 Vector2 normalise_vector(Vector2 vector);
