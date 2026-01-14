@@ -18,19 +18,25 @@ void show_title(game_world *world, const char *text) {
     world->title.fade_out = 0.25;
 
     world -> time -> time_change_start = world -> time -> total;
-
 }
 
+// returns false if the title should be shown?
+// returns true when title should stop showing.
 bool update_title(game_world *world, time *time) {
-    if (!world->title.is_active) return false;
+    if (!world->title.is_active) {
+        return false;
+    }
 
     world->title.time_shown += time->true_dt;
 
     if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-        world->title.is_active = false;
-        time->time_change_start = time->total;   
-        return true;       
+        if (!world->is_game_won) {
+            world->title.is_active = false;
+            time->time_change_start = time->total;   
+            return true;   
+        }
     }
+
     return false;
 }
 
@@ -51,15 +57,33 @@ void draw_title(game_world *world) {
 
     int font_size = 60;
     int text_width = MeasureText(world->title.text, font_size);
-    DrawText(world->title.text,
-     (world->screen.width - text_width) / 2, 
-     (world->screen.height) / 2 - font_size / 2,
-     font_size,
-     (Color){220, 220, 220, (unsigned char)(alpha * 255)});
-
-    DrawText("Press ENTER or SPACE",
-         20,
-         world->screen.height - 40,
-         20,
-         (Color){200,200,200,(unsigned char)(255*alpha)});
+    if (world->is_game_won) {
+        DrawText("you don't suck", (world->screen.width - text_width) / 2, (world->screen.height) / 2 - font_size / 2, font_size, (Color){220, 220, 220, (unsigned char)(alpha * 255)});
+        DrawText("GGs", (world->screen.width - MeasureText("GGs", font_size)) / 2, (world->screen.height) / 2 - font_size / 2 - 60, font_size, (Color){220, 220, 220, (unsigned char)(alpha * 255)});
+        DrawText(TextFormat("Deaths: %d  Damage Taken: %d  Kills: %d", world->player.deaths, world->player.damage_taken, world->player.kills), (world->screen.width - MeasureText(TextFormat("Deaths: %d  Damage Taken: %d  Kills: %d", world->player.deaths, world->player.damage_taken, world->player.kills), font_size)) / 2, (world->screen.height) / 2 - font_size / 2 + 60, font_size, (Color){220, 220, 220, (unsigned char)(alpha * 255)});
+        DrawText(TextFormat("Time Taken: %.2lf", world->time->time_of_win), (world->screen.width - MeasureText(TextFormat("Time Taken: %.2lf", world->time->time_of_win), font_size)) / 2, (world->screen.height) / 2 - font_size / 2 + 120, font_size, (Color){220, 220, 220, (unsigned char)(alpha * 255)});
+    
+        DrawText(
+            "Press ESC to quit",
+            20,
+            world->screen.height - 40,
+            20,
+            (Color){200,200,200,(unsigned char)(255*alpha)}
+        );
+    } else {
+        DrawText(
+            world->title.text,
+            (world->screen.width - text_width) / 2, 
+            (world->screen.height) / 2 - font_size / 2,
+            font_size,
+            (Color){220, 220, 220, (unsigned char)(alpha * 255)}
+        );
+        DrawText(
+            "Press ENTER or SPACE",
+            20,
+            world->screen.height - 40,
+            20,
+            (Color){200,200,200,(unsigned char)(255*alpha)}
+        );
+    }
 }

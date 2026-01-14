@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <math.h>
 #include <assert.h>
 
@@ -42,11 +43,8 @@ void test_spawn_wave(game_world *world) {
 
 // general function that spawns an enemy with TYPE at location.
 // returns a unique int key correlating to the enemy that has just been spawned in case of sub-enemies
-int spawn_enemy(game_world *world, enemy_type type) {
-    if (world->objects.enemies.count >= MAX_ENEMIES) {
-        printf("ERROR: TOO MANY ENEMIES\n");
-        return INVALID_KEY;
-    }
+int spawn_enemy(game_world *world, int type) {
+    assert(world->objects.enemies.count < MAX_ENEMIES && "TOO MANY ENEMIES");
 
     create_enemy(world, &world->objects.enemies.list[world->objects.enemies.count++], type);
     return world->objects.enemies.enemy_keys - 1;
@@ -67,6 +65,10 @@ void create_enemy(game_world *world, enemy *enemy, enemy_type type) {
     enemy->hitbox.invincible_duration = 0;
 
     switch (type) {
+        case ENEMY_COUNT:
+            // Impossible case, used to track number of enemy types
+            // Silence compiler warning.
+            break;
         case CHASER:
             create_chaser(world, enemy);
             break;
@@ -122,6 +124,10 @@ void update_enemies(game_world *world, time *time) {
         }
 
         switch (enemy->type) {
+            case ENEMY_COUNT:
+                // Impossible case, used to track number of enemy types
+                // Silence compiler warning.
+                break;
             case CHASER:
                 update_chaser(world, enemy, time);
                 break;
@@ -2212,9 +2218,7 @@ void kill_tesla(game_world *world, int kill_index) {
         remove_hurtbox_from_key(world, dead_enemy->tesla.charge_hurtbox_key);
         int index_in_tesla_list = INVALID_INDEX;
         for (int i = 0; i < enemies->teslas.tesla_count; i++) {
-            printf("comp %d - %d\n", enemies->teslas.tesla_list[i]->key, dead_enemy->key);
             if (enemies->teslas.tesla_list[i]->key == dead_enemy->key) {
-                printf("true!");
                 index_in_tesla_list = i;
                 break;
             }

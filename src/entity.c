@@ -76,6 +76,10 @@ void update_player_movement(game_world *world, time *time) {
                 player->dash.is_dashing = false;
             }
             break;
+        case DEAD:
+            general_movement(&player->movement, player->movement.velocity, 0, PLAYER_DEAD_COE, time);
+            collide_player_world(&world->player);
+            break;
     }
 
     update_player_health(&world->objects, player, *time);
@@ -158,6 +162,7 @@ void damage_player(game_world *world, int damage) {
         return;
     } else {
         player->health -= damage;
+        player->damage_taken += damage;
         player->invincible_duration = INVINCIBILITY_DURATION;
     }
 }
@@ -442,6 +447,7 @@ void update_player_health(world_objects *objects, player *player, time time) {
 
     if (check_player_hurtbox_collision(*objects, *player, time)) {
         player->health--;
+        player->damage_taken++;
         player->invincible_duration = INVINCIBILITY_DURATION;
         return;
     }

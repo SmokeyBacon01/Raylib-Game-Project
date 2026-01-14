@@ -69,6 +69,7 @@ typedef struct time {
     double total;
     double time_change_start;
     double zoom_change_start;
+    double time_of_win;
 } time;
 
 typedef struct screen {
@@ -92,7 +93,8 @@ struct dash {
 typedef enum player_movement_state {
     NORMAL,
     MANUAL_DASH,
-    INVOLUNTARY_DASH
+    INVOLUNTARY_DASH,
+    DEAD
 } player_movement_state;
 
 
@@ -104,6 +106,8 @@ typedef struct player {
     double slow_duration;
     struct dash dash;
     int kills;
+    int damage_taken;
+    int deaths;
 } player;
 
 typedef enum enemy_type {
@@ -113,7 +117,8 @@ typedef enum enemy_type {
     DRONE,
     CHARGER,
     CHARGER_WEAKPOINT,
-    TESLA
+    TESLA,
+    ENEMY_COUNT
 } enemy_type;
 
 typedef enum chaser_state {
@@ -299,8 +304,10 @@ typedef struct game_world {
     movement_data camera_data;
     time *time;
     title_text title;
+    int waves[MAX_WAVES][ENEMY_COUNT];
+    int wave_count;
+    bool is_game_won;
 } game_world;
-
 
 void draw_debug(time time, game_world *world);
 

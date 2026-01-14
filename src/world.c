@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 
 #include "header.h"
 #include "world.h"
@@ -14,6 +15,8 @@
 void draw_debug(time time, game_world *world) {
     int n = 10;
     DrawFPS(10, n);
+    n += 40;
+    DrawText(TextFormat("WAVE: %d", world->wave_count + 1), 10, n, 20, BLACK);
     n += 40;
     DrawText(TextFormat("Time elapsed: %lf", time.total), 10, n, 20, BLACK);
     n += 40;
@@ -37,16 +40,18 @@ void draw_debug(time time, game_world *world) {
     //     DrawText(TextFormat("Collision!", world->player.health), 10, n, 20, BLACK);
     // }
     // n += 40;
-    int count = world->objects.enemies.count;
-    DrawText(TextFormat("Entities: %d", count), 10, n, 20, BLACK);
-    n += 40;
+    // int count = world->objects.enemies.count;
+    // DrawText(TextFormat("Entities: %d", count), 10, n, 20, BLACK);
+    // n += 40;
     // DrawText(TextFormat("Camera position: %lf, %lf", world->camera.offset.x, world->camera.offset.y), 10, n, 20, BLACK);
     // n += 40;
     // DrawText(TextFormat("Camera velocity: %lf", Vector2Length(world->camera_data.velocity) / 100), 10, n, 20, BLACK);
     // n += 40;
     // DrawText(TextFormat("Camera acceleration: %lf", Vector2Length(world->camera_data.acceleration) / 100), 10, n, 20, BLACK);
     // n += 40;
-    DrawText(TextFormat("Kills: %d", world->player.kills), 10, n, 20, BLACK);
+    // DrawText(TextFormat("Kills: %d", world->player.kills), 10, n, 20, BLACK);
+    // n += 40;
+    DrawText(TextFormat("DEATHS: %d", world->player.deaths), 10, n, 20, BLACK);
     n += 40;
     // DrawText(TextFormat("Slow: %lf", world->player.slow_duration), 10, n, 20, BLACK);
     // n += 40;
@@ -95,21 +100,11 @@ void draw_debug(time time, game_world *world) {
     // }
     // DrawText(TextFormat("health: %d", world->objects.enemies.list[0].hitbox.health), 10, n, 20, BLACK);
     // n += 40;
-
-    for (int i = 0; i < 8; i++) {
-        enemy *enemy = world->objects.enemies.teslas.tesla_list[i];
-        if (enemy == NULL) {
-            DrawText(TextFormat("%d. Empty", i), 10, n, 20, BLACK);
-            n += 40;
-        } else {
-            DrawText(TextFormat("%d. Empty", i), 10, n, 20, BLACK);
-            n += 40;
-        }
-    }
 }
 
 void reset_game(game_world *world, time *time) {
-    initialise_time(time);
+    time->time_change_start = 0;
+    time->zoom_change_start = 0;
 
     initialise_enemies(&world->objects.enemies);
     initialise_hurtboxes(&world->objects);
@@ -120,13 +115,27 @@ void reset_game(game_world *world, time *time) {
     }
 
     world->objects.enemies.count = 0;
-    initialise_player(&world->player);
+    reset_player(&world->player);
 
     world->title.is_active = false;
     world->title.time_shown = 0;
 
-    test_spawn_wave(world);
+    spawn_appropriate_wave(world);
     show_title(world, TITLE_CARD);
+}
+
+void reset_player(player *player) {
+    player->health = PLAYER_MAX_HEALTH;
+    player->movement_state = NORMAL;
+    player->movement.position = Vector2Zero();
+    player->movement.velocity = Vector2Zero();
+    player->movement.acceleration = Vector2Zero();
+    player->invincible_duration = 0;
+    player->slow_duration = 0;
+    player->dash.is_dashing = false;
+    player->dash.cooldown = 0;
+    player->dash.duration = 0;
+    player->dash.direction = Vector2Zero();
 }
 
 void update_time(game_world *world, time *time, player *player) {
@@ -187,7 +196,7 @@ void draw_map(void) {
     }
 }
 void waves(game_world *world, time time, double *cooldown) {
-    if (world->objects.enemies.count != 0) {
+    if (world->is_game_won) {
         return;
     }
 
@@ -195,16 +204,90 @@ void waves(game_world *world, time time, double *cooldown) {
         *cooldown -= time.dt;
         return;
     } else if (*cooldown < 0) {
-        *cooldown = 2;
+        *cooldown = WAVE_INTERMISSION;
     }
 
     if (world->objects.enemies.count == 0){
-        show_title(world, "NEXT WAVE");
+        world->wave_count++;
+        spawn_appropriate_wave(world);
+        if (!world->is_game_won) {
+            show_title(world, "NEXT WAVE");
+        }
         draw_title(world);
 
-        // 30 chasers, because fuck you, thats why
-        test_spawn_wave(world);
+        world->player.health = PLAYER_MAX_HEALTH;
     }
+}
+
+void initialise_waves(game_world *world) {
+    // USE IT LIKE THIS:
+    //  {CHASER, BOMBERS, LASERS, DRONES, CHARGERS, 0, TESLAS}
+    // the 0 is because CHARGER_WEAKPOINT is an enemy type.
+    // It doesnt actually matter, it won't be used.
+    // DRONE CAP IS 8
+    
+    
+    // this big ass gap is to align the array.
+    // now, you can use lines to count the waves.
+    
+    world->wave_count = 0;
+    int waves[MAX_WAVES][ENEMY_COUNT] = {
+    //  {c, B, L, D, C, 0, t}
+        {3, 0, 0, 0, 0, 0, 0},
+        {5, 0, 0, 0, 0, 0, 0},
+        {3, 1, 0, 0, 0, 0, 0},
+        {0, 5, 0, 0, 0, 0, 0},
+        {0, 0, 3, 0, 0, 0, 0},
+        {3, 0, 3, 0, 0, 0, 0},
+        {0, 3, 5, 0, 0, 0, 0},
+        {8, 0, 0, 0, 0, 0, 0},
+        {0, 0, 8, 0, 0, 0, 0},
+        {15, 3, 0, 0, 0, 0, 0},
+        {20, 0, 5, 0, 0, 0, 0},
+        {0, 0, 0, 8, 0, 0, 0},
+        {0, 0, 3, 8, 0, 0, 0},
+        {3, 1, 0, 5, 0, 0, 0},
+        {0, 0, 0, 0, 1, 0, 0},
+        {0, 0, 3, 0, 3, 0, 0},
+        {0, 0, 0, 8, 3, 0, 0},
+        {3, 0, 0, 0, 0, 0, 5},
+        {3, 0, 3, 8, 1, 0, 12}
+    };
+
+    memcpy(world->waves, waves, sizeof(world->waves));
+}
+
+void spawn_appropriate_wave(game_world *world) {
+    if (world->wave_count == MAX_WAVES) {
+        world->is_game_won = true;
+        world->time->time_of_win = world->time->total;
+    } else {
+        spawn_wave(world, world->waves[world->wave_count]);
+    }
+}
+
+void spawn_wave(game_world *world, int wave_data[ENEMY_COUNT]) {
+    for (int i = 0; i < ENEMY_COUNT; i++) {
+        for (int j = 0; j < wave_data[i]; j++) {
+            if (!should_spawn_enemy(i)) {
+                continue;
+            }
+            spawn_enemy(world, i);
+        }
+    }
+
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (world->objects.enemies.list[i].is_active) {
+            world->objects.enemies.list[i].id = i;
+        }
+    }
+}
+
+bool should_spawn_enemy(enemy_type type) {
+    if (type == CHARGER_WEAKPOINT) {
+        return false;
+    }
+    return true;
 }
 
 // Updates what the camera sees
@@ -226,6 +309,8 @@ void update_draw_frame(game_world *world, time time) {
             case INVOLUNTARY_DASH:
                 colour = PURPLE;
                 break;
+            case DEAD:
+                colour = RED;
         }
 
         if (world->player.invincible_duration > 0) {
@@ -388,11 +473,11 @@ void initialise_world(game_world *world, time *time) {
     world->title.fade_in = 0.2;
     world->title.fade_out = 0.2;
 
-
+    world->is_game_won = false;
 
     initialise_player(&world->player);
     initialise_enemies(&world->objects.enemies);
-
+    initialise_waves(world);
 
     show_title(world, TITLE_CARD);
     
@@ -400,6 +485,7 @@ void initialise_world(game_world *world, time *time) {
 
 void initialise_player(player *player) {
     player->health = PLAYER_MAX_HEALTH;
+    player->movement_state = NORMAL;
     player->movement.position = Vector2Zero();
     player->movement.velocity = Vector2Zero();
     player->movement.acceleration = Vector2Zero();
@@ -410,9 +496,12 @@ void initialise_player(player *player) {
     player->dash.duration = 0;
     player->dash.direction = Vector2Zero();
     player->kills = 0;
+    player->damage_taken = 0;
+    player->deaths = 0;
 }
 
 void initialise_time(time *time) {
+    time->time_of_win = 0;
     time->total = 0;
     time->time_change_start = 0;
     time->zoom_change_start = 0;

@@ -19,7 +19,14 @@
 #include "entity.h"
 #include "enemy.h"
 
- 
+void black_magic(game_world *world) {
+    if (IsKeyPressed(KEY_L)) {
+        for (int i = 0; i < world->objects.enemies.count; i++) {
+            damage_enemy(&world->objects, &world->player, world->objects.enemies.list[i].id, 999);
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
  
     if (argc != 1) {
@@ -39,13 +46,10 @@ int main(int argc, char *argv[]) {
     
 
     game_world *world = malloc(sizeof(game_world));
-
     double wave_cooldown = WAVE_INTERMISSION;
     
-
     initialise_hurtboxes(&world->objects);
     initialise_hitboxes(&world->objects);
-
     initialise_world(world, &time);
 
     InitAudioDevice(); 
@@ -70,7 +74,7 @@ int main(int argc, char *argv[]) {
 
     SetTargetFPS(FPS);  
 
-    test_spawn_wave(world);
+    spawn_appropriate_wave(world);
  
     // Main gameplay loop.
     while (!WindowShouldClose()) {
@@ -83,10 +87,16 @@ int main(int argc, char *argv[]) {
             else ResumeMusicStream(music);
         }
 
+        if (world->is_game_won && !world->title.is_active) {
+            show_title(world, "you dont suck");
+        }
+
         update_time(world, &time, &world->player);
 
         if (world->player.health <= 0 && !world->title.is_active){
             show_title(world, "you suck");
+            world->player.movement_state = DEAD;
+            world->player.deaths++;
         }
 
         if (update_title(world, &time) && world->player.health <= 0) {
@@ -95,9 +105,9 @@ int main(int argc, char *argv[]) {
         }
 
         waves(world, time, &wave_cooldown);
-
-
         update_player(world, &time);
+        //DEBUG
+        black_magic(world);
 
         update_enemies(world, &time);
         update_hitboxes(world);

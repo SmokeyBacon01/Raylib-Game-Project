@@ -5,7 +5,7 @@
 void update_enemies(game_world *world, time *time);
 
 // SPAWNING
-int spawn_enemy(game_world *world, enemy_type type);
+int spawn_enemy(game_world *world, int type);
 bool is_spawn_too_close(game_world *world, Vector2 position);
 void create_enemy(game_world *world, enemy *enemy, enemy_type type);
 
