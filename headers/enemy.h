@@ -126,10 +126,15 @@ void update_tesla(game_world *world, enemy *enemy, time *time);
 void initialise_teslas(tesla_collective_data *teslas);
 void tesla_enter_stalking(game_world *world, enemy *enemy);
 void tesla_exit_stalking(game_world *world, enemy *enemy, time *time);
+void tesla_enter_charging(game_world *world, enemy *enemy);
+void tesla_exit_charging(game_world *world, enemy *enemy, time *time);
+void tesla_update_all_charge_targets(game_world *world);
+int get_uncharged_enemy_key(game_world *world);
 
 // ENEMY UPDATES
 void kill_enemies(game_world *world);
 void kill_enemy(game_world *world, int kill_index);
+void kill_tesla(game_world *world, int kill_index);
 void kill_drone(game_world *world, int kill_index);
 void kill_laser(game_world *world, int kill_index);
 void kill_charger_weakpoint(game_world *world, int kill_index);

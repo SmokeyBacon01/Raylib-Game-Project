@@ -95,6 +95,17 @@ void draw_debug(time time, game_world *world) {
     // }
     // DrawText(TextFormat("health: %d", world->objects.enemies.list[0].hitbox.health), 10, n, 20, BLACK);
     // n += 40;
+
+    for (int i = 0; i < 8; i++) {
+        enemy *enemy = world->objects.enemies.teslas.tesla_list[i];
+        if (enemy == NULL) {
+            DrawText(TextFormat("%d. Empty", i), 10, n, 20, BLACK);
+            n += 40;
+        } else {
+            DrawText(TextFormat("%d. Empty", i), 10, n, 20, BLACK);
+            n += 40;
+        }
+    }
 }
 
 void reset_game(game_world *world, time *time) {
@@ -244,6 +255,8 @@ void update_draw_frame(game_world *world, time time) {
                 draw_drone(enemy);
             } else if (enemy.type == CHARGER) {
                 draw_charger(world, enemy);
+            } else if (enemy.type == TESLA) {
+                draw_tesla(enemy);
             }
         }   
 
@@ -317,6 +330,10 @@ void draw_charger(game_world *world, enemy enemy) {
         }
     }
     DrawCircleV(enemy.movement.position, CHARGER_RADIUS, LIGHTGRAY);
+}
+
+void draw_tesla(enemy enemy) {
+    DrawCircleV(enemy.movement.position, TESLA_RADIUS, BLUE);
 }
 
 void update_camera(game_world *world, time time) {
@@ -406,6 +423,7 @@ void initialise_enemies(enemies *enemy) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         enemy->list[i].is_active = false;
         enemy->list[i].hitbox.is_active = false;
+        enemy->list[i].tesla.is_charged = false;
     }
 
     initialise_drones(&enemy->drones);
