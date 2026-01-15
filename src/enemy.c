@@ -180,6 +180,12 @@ GROUP_DISCHARGE:
     When any member is hit, directly linked members create a small AoE. Two connected members form a new link and the hit member is disconnected.
 */
 
+
+// TODO:
+// when charge target dies, delete hurtbox and go stalk
+// charger also charges sub parts.
+
+// GROUP TESLA ORGY
 void update_tesla(game_world *world, enemy *enemy, time *time) {
     switch (enemy->tesla.state) {
         case TESLA_NONE: 
@@ -276,10 +282,6 @@ int get_uncharged_enemy_key(game_world *world) {
         }
 
         if (enemy->type == TESLA) {
-            continue;
-        }
-
-        if (enemy->tesla.is_charged) {
             continue;
         }
         
