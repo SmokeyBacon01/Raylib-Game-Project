@@ -122,6 +122,7 @@ void charger_exit_stunned(enemy *enemy, time *time);
 
 // TESLAS
 void create_tesla(game_world *world, enemy *enemy);
+void fix_tesla_list(game_world *world);
 void update_tesla(game_world *world, enemy *enemy, time *time);
 void initialise_teslas(tesla_collective_data *teslas);
 void tesla_enter_stalking(game_world *world, enemy *enemy);

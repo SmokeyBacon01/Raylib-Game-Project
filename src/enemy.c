@@ -185,7 +185,6 @@ GROUP_DISCHARGE:
 // when charge target dies, delete hurtbox and go stalk
 // charger also charges sub parts.
 
-// GROUP TESLA ORGY
 void update_tesla(game_world *world, enemy *enemy, time *time) {
     switch (enemy->tesla.state) {
         case TESLA_NONE: 
@@ -204,6 +203,16 @@ void update_tesla(game_world *world, enemy *enemy, time *time) {
                 tesla_enter_stalking(world, enemy);
             }
             break;
+    }
+}
+
+void fix_tesla_list(game_world *world) {
+    int index = 0;
+    for (int i = 0; i < world->objects.enemies.count; i++) {
+        enemy *enemy = &world->objects.enemies.list[i];
+        if (enemy->type == TESLA) {
+            world->objects.enemies.teslas.tesla_list[index++] = enemy;
+        }
     }
 }
 
@@ -2156,6 +2165,7 @@ void kill_tesla(game_world *world, int kill_index) {
         target->tesla.charging_tesla_key = INVALID_KEY;
     }
     remove_hurtbox_from_key(world, victim->tesla.charge_hurtbox_key);
+    fix_tesla_list(world);
 }
 
 void kill_charger_weakpoint(game_world *world, int kill_index) {
