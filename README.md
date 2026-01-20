@@ -8,15 +8,11 @@ Run the executable with any command line argument to open in window mode (to vie
 ! The raylib files aren't actually in this repo !
 
 KNOWN ISSUES:
+All good, I think...
+Tesla enemies are still mildly unstable so keep an eye out for potential bugs.
 
-uuuuh
-
-TODO:
-
-Finish Tesla enemy
-
-Implement proper, angular velocity, based turning. They currently snap
-
-Implement boss fights
-
-Implement a proper wave system.
+As this project nears its end, keep these things in mind for the future;
+- Write down and maintain a pipeline, many bugs were caused due to update order.
+- Note down what functions are unsafe and where they fail. Leave asserts to help bugfix.
+- More files. enemy.c grew to be too bloated.
+- Don't overengineer solutions. Chasers took longer to develop than they had any right to. Make it work, then make it good.
