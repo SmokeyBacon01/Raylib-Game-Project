@@ -294,7 +294,7 @@ void create_tesla(game_world *world, enemy *enemy) {
     enemy->hitbox.circle.centre = enemy->movement.position;
     enemy->hitbox.circle.radius = TESLA_RADIUS;
     enemy->radius = TESLA_RADIUS;
-    enemy->knockback_coefficient = TESLA_KNOCKBACK_COEFFECIENT;
+    enemy->knockback_coefficient = TESLA_KNOCKBACK_COEFFICIENT;
 
     enemy->tesla.state = TESLA_NONE;
     enemy->tesla.stalking_duration = TESLA_STALKING_DURATION;
@@ -593,7 +593,7 @@ void create_charger(game_world *world, enemy *enemy) {
     enemy->hitbox.circle.centre = enemy->movement.position;
     enemy->hitbox.circle.radius = CHARGER_RADIUS;
     enemy->radius = CHARGER_RADIUS;
-    enemy->knockback_coefficient = CHARGER_KNOCKBACK_COEFFECIENT;
+    enemy->knockback_coefficient = CHARGER_KNOCKBACK_COEFFICIENT;
 
     enemy->charger.state = CHARGER_STALKING;
     enemy->charger.facing_direction = Vector2Normalize(Vector2Subtract(world->player.movement.position, enemy->movement.position));
@@ -628,7 +628,7 @@ void create_charger_weakpoint(enemy *enemy) {
     enemy->hitbox.health = CHARGER_WEAKPOINT_HEALTH;
     enemy->hitbox.circle.radius = CHARGER_WEAKPOINT_RADIUS;
     enemy->radius = CHARGER_WEAKPOINT_RADIUS;
-    enemy->knockback_coefficient = CHARGER_KNOCKBACK_COEFFECIENT;
+    enemy->knockback_coefficient = CHARGER_KNOCKBACK_COEFFICIENT;
 }
 
 Vector2 find_charger_spawn(game_world *world) {
@@ -2011,7 +2011,7 @@ void create_chaser(game_world *world, enemy *enemy) {
     enemy->hitbox.circle.centre = enemy->movement.position;
     enemy->hitbox.circle.radius = CHASER_RADIUS;
     enemy->radius = CHASER_RADIUS;
-    enemy->knockback_coefficient = CHASER_KNOCKBACK_COEFFECIENT;
+    enemy->knockback_coefficient = CHASER_KNOCKBACK_COEFFICIENT;
 
     enemy->chaser.state = CHASER_STALKING;
     enemy->chaser.stalking_point = get_chaser_stalking_point(enemy, &world->player);
