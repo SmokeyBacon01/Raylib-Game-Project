@@ -153,8 +153,8 @@ void update_enemies(game_world *world, time *time) {
         update_counter(&enemy->hitbox.invincible_duration, time);
     }
 
+    update_tesla_charge_hurtboxes(world);
     update_all_drones(world, time);
-    tesla_update_all_charge_targets(world);
     kill_enemies(world);
 }
 /////////////////////////////// TESLA LOGIC ///////////////////////////////
@@ -192,119 +192,88 @@ void update_tesla(game_world *world, enemy *enemy, time *time) {
             tesla_enter_stalking(world, enemy);
             break;
         case TESLA_STALKING:
-            tesla_exit_stalking(world, enemy, time);
+            update_counter(&enemy->tesla.stalking_duration, time);
+            if (enemy->tesla.stalking_duration == 0) {
+                tesla_enter_charging(world, enemy);
+            }
             break;
         case TESLA_CHARGING:
-            tesla_exit_charging(world, enemy, time);
+            update_counter(&enemy->tesla.charging_duration, time);
+            if (enemy->tesla.charging_duration == 0) {
+                tesla_exit_charging(world, enemy);
+                tesla_enter_stalking(world, enemy);
+            }
             break;
     }
 }
 
-void tesla_update_all_charge_targets(game_world *world) {
+void update_tesla_charge_hurtboxes(game_world *world) {
     for (int i = 0; i < world->objects.enemies.teslas.tesla_count; i++) {
         enemy *tesla = world->objects.enemies.teslas.tesla_list[i];
-        enemy *target = get_enemy_from_key(world, tesla->tesla.charging_target_key);
-        if (target == NULL) {
+        if (!tesla->is_active) {
+            continue;
+        } else if (tesla->tesla.state != TESLA_CHARGING) {
             continue;
         }
 
         hurtbox *hurtbox = get_hurtbox_from_key(world, tesla->tesla.charge_hurtbox_key);
+        enemy *target = get_enemy_from_key(world, tesla->tesla.charging_target_key);
         if (hurtbox == NULL) {
             continue;
+        } else if (target == NULL) {
+            continue;
         }
-        
+
         hurtbox->circle.centre = target->movement.position;
     }
 }
 
-// change state into stalking
 void tesla_enter_stalking(game_world *world, enemy *enemy) {
     enemy->tesla.state = TESLA_STALKING;
-    enemy->tesla.charging_target_key = INVALID_KEY;
     enemy->tesla.stalking_duration = TESLA_STALKING_DURATION;
-
-    enemy->tesla.charge_hurtbox_key = create_circle_hurtbox(&world->objects, enemy->movement.position, enemy->radius * TESLA_CHARGING_RADIUS_MULTIPLIER, TESLA_ATTACK_TELEGRAPH, TESLA_STALKING_DURATION - TESLA_ATTACK_TELEGRAPH);
-}
-
-void tesla_exit_stalking(game_world *world, enemy *enemy, time *time) {
-    update_counter(&enemy->tesla.stalking_duration, time);
-    if (enemy->tesla.stalking_duration == 0) {
-        enemy->tesla.stalking_duration = TESLA_STALKING_DURATION;
-        tesla_enter_charging(world, enemy);
-    }
+    enemy->tesla.charging_target_key = enemy->key;
+    enemy->tesla.charge_hurtbox_key = create_circle_hurtbox(&world->objects, enemy->movement.position, enemy->radius * TESLA_CHARGING_RADIUS_MULTIPLIER, TESLA_CHARGING_TELEGRAPH, TESLA_STALKING_DURATION - TESLA_CHARGING_TELEGRAPH);
 }
 
 void tesla_enter_charging(game_world *world, enemy *enemy) {
     enemy->tesla.state = TESLA_CHARGING;
+    enemy->tesla.charging_duration = TESLA_CHARGING_DURATION;
     enemy->tesla.charging_target_key = get_uncharged_enemy_key(world);
+
     if (enemy->tesla.charging_target_key == INVALID_KEY) {
         return;
     }
+    
+    struct enemy *target = get_enemy_from_key(world, enemy->tesla.charging_target_key);
+    target->tesla.charging_tesla_key = enemy->key;
+    enemy->tesla.charge_hurtbox_key = create_circle_hurtbox(&world->objects, target->movement.position, target->radius * TESLA_CHARGING_RADIUS_MULTIPLIER, TESLA_CHARGING_TELEGRAPH, TESLA_CHARGING_DURATION - TESLA_CHARGING_TELEGRAPH);
+}
 
+void tesla_exit_charging(game_world *world, enemy *enemy) {
     struct enemy *target = get_enemy_from_key(world, enemy->tesla.charging_target_key);
     if (target == NULL) {
         return;
     }
-    enemy->tesla.charge_hurtbox_key = create_circle_hurtbox(&world->objects, target->movement.position, target->radius * TESLA_CHARGING_RADIUS_MULTIPLIER, TESLA_CHARGING_TELEGRAPH, TESLA_CHARGING_DURATION - TESLA_CHARGING_TELEGRAPH);
-    target->tesla.is_charged = true;
+    target->tesla.charging_tesla_key = INVALID_KEY;
 }
 
-void tesla_exit_charging(game_world *world, enemy *enemy, time *time) {
-    update_counter(&enemy->tesla.charging_duration, time);
-    if (enemy->tesla.charging_duration == 0) {
-        enemy->tesla.charging_duration = TESLA_CHARGING_DURATION;
-        struct enemy *target = get_enemy_from_key(world, enemy->tesla.charging_target_key); 
-        if (target == NULL) {
-            tesla_enter_stalking(world, enemy);
-            return;
-        }
-        target->tesla.is_charged = false;
-        enemy->tesla.charging_target_key = INVALID_KEY;
-        tesla_enter_stalking(world, enemy);
-    }
-}
-
-// Yeah honestly I'm too lazy to get a better algorithm.
-// Time complexity of the search is O(n^2) (actually might be O(n*m)) lmao.
 int get_uncharged_enemy_key(game_world *world) {
-    tesla_collective_data *teslas = &world->objects.enemies.teslas;
-    enemy *enemy_list = world->objects.enemies.list;
-
     for (int i = 0; i < world->objects.enemies.count; i++) {
-        enemy *enemy = &enemy_list[i];
-        
-        if (!enemy->is_active) {
+        enemy *candidate = &world->objects.enemies.list[i];
+
+        if (!candidate->is_active) {
             continue;
         }
 
-        if (enemy->type == CHARGER_WEAKPOINT) {
+        if (candidate->type == TESLA || candidate->type == CHARGER_WEAKPOINT) {
             continue;
         }
 
-        if (enemy->type == TESLA) {
+        if (candidate->tesla.charging_tesla_key != INVALID_KEY) {
             continue;
         }
-        
-        bool is_valid = true;
-        for (int j = 0; j < teslas->tesla_count; j++) {
-            if (teslas->tesla_list[j] == NULL) {
-                continue;
-            }
 
-            if (!teslas->tesla_list[j]->is_active) {
-                continue;
-            }
-
-            if (teslas->tesla_list[j]->tesla.charging_target_key == enemy->key) {
-                is_valid = false;
-                break;
-            }
-        }
-
-        if (is_valid) {
-            enemy->tesla.is_charged = true;
-            return enemy->key;
-        }
+        return candidate->key;
     }
 
     return INVALID_KEY;
@@ -312,7 +281,7 @@ int get_uncharged_enemy_key(game_world *world) {
 
 void create_tesla(game_world *world, enemy *enemy) {
     enemy->hitbox.health = TESLA_HEALTH;
-    enemy->movement.position = find_laser_spawn(world);
+    enemy->movement.position = find_chaser_spawn(world);
     enemy->hitbox.circle.centre = enemy->movement.position;
     enemy->hitbox.circle.radius = TESLA_RADIUS;
     enemy->radius = TESLA_RADIUS;
@@ -2154,6 +2123,7 @@ void kill_enemy(game_world *world, int kill_index) {
     kill_drone(world, kill_index);
     kill_charger_weakpoint(world, kill_index);
     kill_tesla(world, kill_index);
+    kill_tesla_target(world, kill_index);
 
     enemies->count--;
     enemies->list[kill_index] = enemies->list[enemies->count];
@@ -2162,6 +2132,30 @@ void kill_enemy(game_world *world, int kill_index) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         enemies->list[i].id = i;
     }
+}
+
+void kill_tesla_target(game_world *world, int kill_index) {
+    enemy *victim = &world->objects.enemies.list[kill_index];
+    if (victim->tesla.charging_tesla_key == INVALID_KEY) {
+        return;
+    }
+
+    enemy *tesla = get_enemy_from_key(world, victim->tesla.charging_tesla_key);
+    if (tesla != NULL) {
+        remove_hurtbox_from_key(world, tesla->tesla.charge_hurtbox_key);
+    }
+}
+
+void kill_tesla(game_world *world, int kill_index) {
+    enemy *victim = &world->objects.enemies.list[kill_index];
+    if (victim->type != TESLA) {
+        return;
+    }
+    enemy *target = get_enemy_from_key(world, victim->tesla.charging_target_key);
+    if (target != NULL) {
+        target->tesla.charging_tesla_key = INVALID_KEY;
+    }
+    remove_hurtbox_from_key(world, victim->tesla.charge_hurtbox_key);
 }
 
 void kill_charger_weakpoint(game_world *world, int kill_index) {
@@ -2204,41 +2198,6 @@ void kill_drone(game_world *world, int kill_index) {
         enemies->drones.drone_list[enemies->drones.drone_count] = NULL;
 
         update_drone_id(world);
-    }
-}
-
-void kill_tesla(game_world *world, int kill_index) {
-    enemies *enemies = &world->objects.enemies;
-    if (enemies->list[kill_index].type == TESLA) {
-        enemy *dead_enemy = &enemies->list[kill_index];
-        enemy *target = get_enemy_from_key(world, dead_enemy->tesla.charging_target_key);
-        if (target != NULL) {
-            target->tesla.is_charged = false;
-        }
-        remove_hurtbox_from_key(world, dead_enemy->tesla.charge_hurtbox_key);
-        int index_in_tesla_list = INVALID_INDEX;
-        for (int i = 0; i < enemies->teslas.tesla_count; i++) {
-            if (enemies->teslas.tesla_list[i]->key == dead_enemy->key) {
-                index_in_tesla_list = i;
-                break;
-            }
-        }
-        assert(index_in_tesla_list != INVALID_INDEX && "Tesla not in list");
-        enemies->teslas.tesla_list[index_in_tesla_list] = enemies->teslas.tesla_list[--enemies->teslas.tesla_count];
-        enemies->teslas.tesla_list[enemies->teslas.tesla_count] = NULL;
-    } else if (enemies->list[kill_index].tesla.is_charged) {
-        enemies->list[kill_index].tesla.is_charged = false;
-        int killed_key = enemies->list[kill_index].key;
-        enemy *tesla = NULL;
-        for (int i = 0; i < enemies->teslas.tesla_count; i++) {
-            if (enemies->teslas.tesla_list[i]->tesla.charging_target_key == killed_key) {
-                tesla = enemies->teslas.tesla_list[i];
-                break;
-            }
-        }
-        assert(tesla != NULL && "Tesla charge owner not found.");
-        remove_hurtbox_from_key(world, tesla->tesla.charge_hurtbox_key);
-        tesla_enter_stalking(world, tesla);
     }
 }
 

@@ -261,7 +261,6 @@ void spawn_appropriate_wave(game_world *world) {
     // test_spawn_wave(world);
     // return;
 
-    world->wave_count = 17;
     if (world->wave_count == MAX_WAVES) {
         world->is_game_won = true;
         world->time->time_of_win = world->time->total;
@@ -516,7 +515,7 @@ void initialise_enemies(enemies *enemy) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         enemy->list[i].is_active = false;
         enemy->list[i].hitbox.is_active = false;
-        enemy->list[i].tesla.is_charged = false;
+        enemy->list[i].tesla.charging_tesla_key = INVALID_KEY;
     }
 
     initialise_drones(&enemy->drones);

@@ -246,7 +246,7 @@ typedef struct tesla_data {
     double charging_duration;
     int charging_target_key;
     int charge_hurtbox_key;
-    bool is_charged;
+    int charging_tesla_key;
 } testla_data;
 
 typedef struct tesla_collective_data {
