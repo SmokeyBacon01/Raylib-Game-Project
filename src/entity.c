@@ -28,6 +28,40 @@ void update_player(game_world *world, time *time) {
     update_player_movement(world, time);
 }
 
+enemy *get_reticle_target(game_world *world) {
+    player *player = &world->player;
+    Vector2 facing_direction = get_input_acceleration();
+    if (Vector2Equals(facing_direction, Vector2Zero())) {
+        return NULL;
+    }
+
+    int index_of_closest = INVALID_INDEX;
+
+    for (int i = 0; i < world->objects.enemies.count; i++) {
+        enemy *enemy = &world->objects.enemies.list[i];
+        if (!enemy->is_active) {
+            continue;
+        }
+
+        Vector2 player_to_enemy = Vector2Subtract(enemy->movement.position, player->movement.position);
+        double angle = Vector2Angle(player_to_enemy, facing_direction);
+        angle = fabs(angle);
+        if (angle < AIM_ASSIST_MAX_ANGLE) {
+            if (index_of_closest == INVALID_INDEX) {
+                index_of_closest = i;
+            } else if (Vector2Distance(player->movement.position, enemy->movement.position) < Vector2Distance(player->movement.position, world->objects.enemies.list[index_of_closest].movement.position)) {
+                index_of_closest = i;
+            }
+        }
+    }
+
+    if (index_of_closest == INVALID_INDEX) {
+        return NULL;
+    } else {
+        return &world->objects.enemies.list[index_of_closest];
+    }
+}
+
 void update_player_movement(game_world *world, time *time) {
     player *player = &world->player;
     switch (player->movement_state) {
@@ -114,6 +148,7 @@ void dash_player_hitbox_collision(game_world *world) {
 
                 if (enemy->should_slow_down_when_killed) {
                     world->player.slow_duration = SLOW_DURATION;
+                    world->player.dash.duration = DASH_DURATION;
                     world->player.dash.cooldown = 0;
                 }
             }
@@ -173,16 +208,12 @@ void dash_player_movement(game_world *world, time *time) {
     double dash_acceleration = PLAYER_ACCELERATION_COE * DASH_ACCELERATION_COE;
     double dash_resistance = PLAYER_RESISTANCE_COE * DASH_RESISTANCE_COE;
 
-    if (world->player.movement_state == INVOLUNTARY_DASH) {
-        if (IsKeyDown(KEY_LEFT_SHIFT)) {
-            dash_resistance *= 2;
-        }
-        general_movement(&player->movement, direction, dash_acceleration, dash_resistance, time);
-    } else {
-        general_movement(&player->movement, direction, dash_acceleration, dash_resistance, time);
+    if (player->movement_state == INVOLUNTARY_DASH) {
+        dash_acceleration *= 0.4;
     }
-}
 
+    general_movement(&player->movement, direction, dash_acceleration, dash_resistance, time);
+}
 
 void begin_player_dash(game_world *world) {
     struct dash *dash = &world->player.dash;
@@ -191,11 +222,21 @@ void begin_player_dash(game_world *world) {
         extend_dash(&world->player);
     }
     dash->is_dashing = true;
-    dash->direction = get_input_acceleration();
+    dash->direction = get_dash_direction(world);
     dash->duration = DASH_DURATION;
     dash->cooldown = DASH_COOLDOWN;
 
     world->player.slow_duration = 0;
+}
+
+Vector2 get_dash_direction(game_world *world) {
+    enemy *target = get_reticle_target(world);
+    if (target == NULL) {
+        return get_input_acceleration();
+    } else {
+        Vector2 direction = Vector2Normalize(Vector2Subtract(target->movement.position, world->player.movement.position));
+        return direction;
+    }
 }
 
 void normal_player_movement(game_world *world, time *time) {
@@ -203,10 +244,6 @@ void normal_player_movement(game_world *world, time *time) {
     Vector2 direction = get_input_acceleration();
 
     double resistance = PLAYER_RESISTANCE_COE;
-    
-    if (IsKeyDown(KEY_LEFT_SHIFT)) {
-        resistance *= 2;
-    }
     
     general_movement(&player->movement, direction, PLAYER_ACCELERATION_COE, resistance, time);
 }

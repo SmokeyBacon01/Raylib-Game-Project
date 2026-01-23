@@ -12,6 +12,9 @@ void dash_player_hitbox_collision(game_world *world);
 
 void damage_player(game_world *world, int damage);
 
+enemy *get_reticle_target(game_world *world);
+Vector2 get_dash_direction(game_world *world);
+
 // OLD
 
 void collide_player_world(player *player);

@@ -20,86 +20,10 @@ void draw_debug(time time, game_world *world) {
     n += 40;
     DrawText(TextFormat("Time elapsed: %lf", time.total), 10, n, 20, BLACK);
     n += 40;
-    // DrawText(TextFormat("position: %lf, %lf", world->player.movement.position.x, world->player.movement.position.y), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("velocity: %lf", Vector2Length(world->player.movement.velocity) / 100), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("acceleration: %lf", Vector2Length(world->player.movement.acceleration) / 100), 10, n, 20, BLACK);
-    // n += 40;
-    // if (world->player.dash.is_dashing) {
-    //     DrawText(TextFormat("Dashing: %.1lf", world->player.dash.duration), 10, n, 20, BLACK);
-    // } else if (world->player.dash.cooldown != 0) {
-    //     DrawText(TextFormat("Cooldown: %.1lf", world->player.dash.cooldown), 10, n, 20, BLACK);
-    // }
-    // n += 40;
     DrawText(TextFormat("HP: %d", world->player.health), 10, n, 20, BLACK);
     n += 40;
-    // DrawText(TextFormat("Invincibility: %lf", world->player.invincible_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // if (check_player_hurtbox_collision(world->objects, world->player, time)) { 
-    //     DrawText(TextFormat("Collision!", world->player.health), 10, n, 20, BLACK);
-    // }
-    // n += 40;
-    // int count = world->objects.enemies.count;
-    // DrawText(TextFormat("Entities: %d", count), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("Camera position: %lf, %lf", world->camera.offset.x, world->camera.offset.y), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("Camera velocity: %lf", Vector2Length(world->camera_data.velocity) / 100), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("Camera acceleration: %lf", Vector2Length(world->camera_data.acceleration) / 100), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("Kills: %d", world->player.kills), 10, n, 20, BLACK);
-    // n += 40;
     DrawText(TextFormat("DEATHS: %d", world->player.deaths), 10, n, 20, BLACK);
     n += 40;
-    // DrawText(TextFormat("Slow: %lf", world->player.slow_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("Slow rate: %lf", world->time->dt / world->time->true_dt), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("attack cooldown: %lf", world->objects.enemies.list[0].laser.attack_cooldown), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("aim duration: %lf", world->objects.enemies.list[0].laser.aim_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("fire delay: %lf", world->objects.enemies.list[0].laser.fire_delay), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("fire_duration: %lf", world->objects.enemies.list[0].laser.fire_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("state: %d", world->objects.enemies.list[0].chaser.state), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("stalking duration: %lf", world->objects.enemies.drones.stalking_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("attack cooldown: %lf", world->objects.enemies.drones.attack_cooldown), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("drone count: %d", world->objects.enemies.drones.drone_count), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("active laser cooldown: %lf", world->objects.enemies.drones.active_laser_cooldown), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("attack interval multiplier: %lf", world->objects.enemies.drones.attack_interval_multiplier), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("special interval multiplier: %lf", world->objects.enemies.drones.barraging_interval_multiplier), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("half time: %lf", world->objects.enemies.drones.big_laser_reverse_timer), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("hurtbox count: %d", world->objects.hurtbox_count), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("stalk: %lf", world->objects.enemies.list[3].charger.stalking_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // DrawText(TextFormat("position: %lf", world->objects.enemies.list[3].charger.positioning_duration), 10, n, 20, BLACK);
-    // n += 40;
-    // for (int i = 0; i < MAX_ENEMIES; i++) {
-    //     enemy *enemy = &world->objects.enemies.list[i];
-    //     if (!enemy->is_active) {
-    //         continue;
-    //     }
-    //     DrawText(TextFormat("invincibility: %lf", enemy->hitbox.invincible_duration), 10, n, 20, BLACK);
-    //     n += 40;
-    //     DrawText(TextFormat("health: %d", enemy->hitbox.health), 10, n, 20, BLACK);
-    //     n += 40;
-
-    // }
-    // DrawText(TextFormat("health: %d", world->objects.enemies.list[0].hitbox.health), 10, n, 20, BLACK);
-    // n += 40;
 }
 
 void reset_game(game_world *world, time *time) {
@@ -251,7 +175,7 @@ void initialise_waves(game_world *world) {
         {0, 0, 3, 0, 3, 0, 0},
         {0, 0, 0, 8, 3, 0, 0},
         {3, 0, 0, 0, 0, 0, 5},
-        {3, 0, 3, 8, 1, 0, 12}
+        {5, 0, 2, 8, 1, 0, 5}
     };
 
     memcpy(world->waves, waves, sizeof(world->waves));
@@ -319,6 +243,14 @@ void update_draw_frame(game_world *world, time time) {
         if (world->player.invincible_duration > 0) {
             colour = RED;
         }
+
+
+        enemy *target = get_reticle_target(world);
+        if (target != NULL) {
+            DrawCircleV(target->movement.position, target->radius + 5, RED);
+            DrawCircleV(target->movement.position, target->radius + 3, WHITE);
+        }
+        
 
         DrawCircleV(world->player.movement.position, PLAYER_RADIUS + 3, colour);
 

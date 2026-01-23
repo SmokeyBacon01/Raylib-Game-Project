@@ -15,10 +15,10 @@
 
 // spawns a test wave
 void test_spawn_wave(game_world *world) {
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 0; i++) {
         spawn_enemy(world, TESLA);
     }
-    for (int i = 0; i < 0; i++) {
+    for (int i = 0; i < 1; i++) {
         spawn_enemy(world, CHARGER);
     }
     for (int i = 0; i < 0; i++) {
@@ -30,7 +30,7 @@ void test_spawn_wave(game_world *world) {
     for (int i = 0; i < 0; i++) {
         spawn_enemy(world, BOMBER);
     }
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 0; i++) {
         spawn_enemy(world, CHASER);
     }
 
@@ -152,7 +152,7 @@ void update_enemies(game_world *world, time *time) {
         }
         update_counter(&enemy->hitbox.invincible_duration, time);
     }
-
+    fix_tesla_list(world);
     update_tesla_charge_hurtboxes(world);
     update_all_drones(world, time);
     kill_enemies(world);
@@ -1806,7 +1806,7 @@ void update_chaser(game_world *world, enemy *enemy, time *time) {
             if (enemy->chaser.attack_cooldown == 0) {
                 enemy->chaser.state = CHASER_FLANKING;
                 enemy->chaser.stalking_point = get_chaser_flanking_point(enemy, &world->player);
-                enemy->chaser.attack_cooldown = CHASER_ATTACK_COOLDOWN;
+                enemy->chaser.attack_cooldown = get_chaser_attack_cooldown();
             }
             break;
         case CHASER_SCATTERING:
@@ -1932,9 +1932,9 @@ Vector2 get_chaser_flanking_point(enemy *enemy, player *player) {
 }
 
 void chaser_stalking_movement(enemy *enemy, player  *player, time *time) {
-    enemy->chaser.stalking_point = Vector2Rotate(enemy->chaser.stalking_point, CHASER_STALKING_ORBITAL_VELOCITY * time->dt);
-    Vector2 relative_stalking_point = Vector2Add(enemy->chaser.stalking_point, player->movement.position);
+    update_chaser_stalking_point(enemy, player, time);
 
+    Vector2 relative_stalking_point = Vector2Add(enemy->chaser.stalking_point, player->movement.position);
     double stalking_point_distance = Vector2Length(Vector2Subtract(relative_stalking_point, enemy->movement.position));
     double player_distance = Vector2Length(Vector2Subtract(enemy->movement.position, player->movement.position));
 
@@ -1945,6 +1945,25 @@ void chaser_stalking_movement(enemy *enemy, player  *player, time *time) {
 
     Vector2 direction = Vector2Subtract(relative_stalking_point, enemy->movement.position);
     general_movement(&enemy->movement, direction, CHASER_STALKING_ACCELERATION, CHASER_STALKING_RESISTANCE, time);
+}
+
+void update_chaser_stalking_point(enemy *enemy, player *player, time *time) {
+    Vector2 relative_stalking_point = Vector2Add(enemy->chaser.stalking_point, player->movement.position);
+    update_counter(&enemy->chaser.flip_cooldown, time);
+    if (enemy->chaser.flip_cooldown == 0 && !is_in_map(relative_stalking_point)) {
+        if (enemy->chaser.stalking_point_direction == CLOCKWISE) {
+            enemy->chaser.stalking_point_direction = COUNTERCLOCKWISE;
+        } else {
+            enemy->chaser.stalking_point_direction = CLOCKWISE;
+        }
+        enemy->chaser.flip_cooldown = CHASER_STALKING_ORBIT_FLIP_COOLDOWN;
+    }
+
+    if (enemy->chaser.stalking_point_direction == CLOCKWISE) {
+        enemy->chaser.stalking_point = Vector2Rotate(enemy->chaser.stalking_point, CHASER_STALKING_ORBITAL_VELOCITY * time->dt);
+    } else {
+        enemy->chaser.stalking_point = Vector2Rotate(enemy->chaser.stalking_point, -CHASER_STALKING_ORBITAL_VELOCITY * time->dt);
+    }
 }
 
 // returns a vector of length 200 - 400 in the same direction as the enemy from the player.
@@ -1986,6 +2005,12 @@ Vector2 find_chaser_spawn(game_world *world) {
     return position;
 }
 
+double get_chaser_attack_cooldown(void) {
+    double random = GetRandomValue(-100, 100);
+    random /= 100;
+    return CHASER_ATTACK_COOLDOWN + random;
+}
+
 void update_chaser_attack_cooldown(enemy *enemy, time *time) {
     if (enemy->chaser.attack_cooldown > 0) {
         enemy->chaser.attack_cooldown -= time->dt;
@@ -2002,7 +2027,7 @@ void start_enemy_dash(game_world *world, enemy *enemy) {
     enemy->chaser.dash_time_left = CHASER_DASH_DURATION;
     enemy->chaser.dash_velocity = Vector2Scale(direction, CHASER_DASH_SPEED);
     
-    enemy->chaser.attack_cooldown = CHASER_ATTACK_COOLDOWN;
+    enemy->chaser.attack_cooldown = get_chaser_attack_cooldown();
 }
 
 void create_chaser(game_world *world, enemy *enemy) {
@@ -2015,10 +2040,12 @@ void create_chaser(game_world *world, enemy *enemy) {
 
     enemy->chaser.state = CHASER_STALKING;
     enemy->chaser.stalking_point = get_chaser_stalking_point(enemy, &world->player);
-    enemy->chaser.attack_cooldown = CHASER_ATTACK_COOLDOWN;
+    enemy->chaser.attack_cooldown = get_chaser_attack_cooldown();
     enemy->chaser.dash_time_left = 0;
     enemy->chaser.dash_velocity = Vector2Zero();
     enemy->chaser.is_attacking = false;
+    enemy->chaser.stalking_point_direction = GetRandomValue(0, 1);
+    enemy->chaser.flip_cooldown = CHASER_STALKING_ORBIT_FLIP_COOLDOWN;
 }
 
 //////////////////////// miscellaneous helpers ////////////////////////
@@ -2165,7 +2192,6 @@ void kill_tesla(game_world *world, int kill_index) {
         target->tesla.charging_tesla_key = INVALID_KEY;
     }
     remove_hurtbox_from_key(world, victim->tesla.charge_hurtbox_key);
-    fix_tesla_list(world);
 }
 
 void kill_charger_weakpoint(game_world *world, int kill_index) {
@@ -2259,7 +2285,7 @@ double degrees_to_radians(double degree) {
     return degree * PI / 180;
 }
 
-// returns a polar vector, with 0 degrees as the positive x axis.
+// returns a vector from polar values, with 0 degrees as the positive x axis.
 Vector2 Vector2Polar(double mod, double arg) {
     Vector2 v = (Vector2){1, 0};
     v = Vector2Scale(v, mod);
@@ -2299,6 +2325,14 @@ enemy *get_enemy_from_key(game_world *world, int key) {
         }
     }
     return NULL;
+}
+
+bool is_in_map(Vector2 point) {
+    if (fabs(point.x) < MAP_SIZE && fabs(point.y) < MAP_SIZE) {
+        return true;
+    }
+
+    return false;
 }
 
 

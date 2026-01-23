@@ -24,6 +24,8 @@ void chaser_scattering_movement(enemy *enemy, game_world *world, time *time);
 void start_enemy_dash(game_world *world, enemy *enemy);
 void update_enemy_dash(enemy *enemy, time *time);
 void update_chaser_attack_cooldown(enemy *enemy, time *time);
+void update_chaser_stalking_point(enemy *enemy, player *player, time *time);
+double get_chaser_attack_cooldown(void);
 
 // BOMBERS
 void create_bomber(game_world *world, enemy *enemy);
@@ -167,5 +169,6 @@ void remove_hurtbox_from_key(game_world *world, int key);
 Vector2 Vector2Polar(double mod, double arg);
 double degrees_to_radians(double degree);
 bool is_close_enough(double x, double y);
+bool is_in_map(Vector2 point);
 
 #endif

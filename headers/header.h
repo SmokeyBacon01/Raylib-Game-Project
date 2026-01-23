@@ -19,6 +19,11 @@ enum hurtbox_shape {
     CAPSULE
 };
 
+enum directions {
+    CLOCKWISE,
+    COUNTERCLOCKWISE
+};
+
 typedef struct line_data {
     Vector2 start;
     Vector2 end;
@@ -135,6 +140,8 @@ typedef struct chaser_data {
     bool is_attacking;
     float dash_time_left;
     Vector2 dash_velocity;
+    enum directions stalking_point_direction;
+    double flip_cooldown;
 } chaser_data;
 
 typedef enum bomber_state {
