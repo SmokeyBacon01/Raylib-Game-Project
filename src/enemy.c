@@ -18,7 +18,7 @@ void test_spawn_wave(game_world *world) {
     for (int i = 0; i < 0; i++) {
         spawn_enemy(world, TESLA);
     }
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 0; i++) {
         spawn_enemy(world, CHARGER);
     }
     for (int i = 0; i < 0; i++) {
@@ -30,7 +30,7 @@ void test_spawn_wave(game_world *world) {
     for (int i = 0; i < 0; i++) {
         spawn_enemy(world, BOMBER);
     }
-    for (int i = 0; i < 0; i++) {
+    for (int i = 0; i < 1; i++) {
         spawn_enemy(world, CHASER);
     }
 
