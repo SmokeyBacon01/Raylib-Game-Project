@@ -152,6 +152,7 @@ void update_enemies(game_world *world, time *time) {
         }
         update_counter(&enemy->hitbox.invincible_duration, time);
     }
+    
     fix_tesla_list(world);
     update_tesla_charge_hurtboxes(world);
     update_all_drones(world, time);
