@@ -24,6 +24,14 @@ void draw_debug(time time, game_world *world) {
     n += 40;
     DrawText(TextFormat("DEATHS: %d", world->player.deaths), 10, n, 20, BLACK);
     n += 40;
+
+    DrawText(TextFormat("Boss health: %.2lf", world->objects.enemies.list[0].boss.health), 10, n, 20, BLACK);
+    n += 40;
+
+    for (int i = 0; i < BOSS_TOTAL_ATTACKS; i++) {
+        DrawText(TextFormat("Attack %d duration: %.2lf", i, world->objects.enemies.list[0].boss.attacks[i].duration), 10, n, 20, BLACK);
+        n += 40;
+    }
 }
 
 void reset_game(game_world *world, time *time) {
@@ -154,28 +162,29 @@ void initialise_waves(game_world *world) {
     // this big ass gap is to align the array.
     // now, you can use lines to count the waves.
     
-    world->wave_count = 0;
+    world->wave_count = 19;
     int waves[MAX_WAVES][ENEMY_COUNT] = {
-    //  {c, B, L, D, C, 0, t}
-        {3, 0, 0, 0, 0, 0, 0},
-        {5, 0, 0, 0, 0, 0, 0},
-        {3, 1, 0, 0, 0, 0, 0},
-        {0, 5, 0, 0, 0, 0, 0},
-        {0, 0, 3, 0, 0, 0, 0},
-        {3, 0, 3, 0, 0, 0, 0},
-        {0, 3, 5, 0, 0, 0, 0},
-        {8, 0, 0, 0, 0, 0, 0},
-        {0, 0, 8, 0, 0, 0, 0},
-        {15, 3, 0, 0, 0, 0, 0},
-        {20, 0, 5, 0, 0, 0, 0},
-        {0, 0, 0, 8, 0, 0, 0},
-        {0, 0, 3, 8, 0, 0, 0},
-        {3, 1, 0, 5, 0, 0, 0},
-        {0, 0, 0, 0, 1, 0, 0},
-        {0, 0, 3, 0, 3, 0, 0},
-        {0, 0, 0, 8, 3, 0, 0},
-        {3, 0, 0, 0, 0, 0, 5},
-        {5, 0, 2, 8, 1, 0, 5}
+    //  {c, B, L, D, C, 0, t, 0}
+        {3, 0, 0, 0, 0, 0, 0, 0},
+        {5, 0, 0, 0, 0, 0, 0, 0},
+        {3, 1, 0, 0, 0, 0, 0, 0},
+        {0, 5, 0, 0, 0, 0, 0, 0},
+        {0, 0, 3, 0, 0, 0, 0, 0},
+        {3, 0, 3, 0, 0, 0, 0, 0},
+        {0, 3, 5, 0, 0, 0, 0, 0},
+        {8, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 8, 0, 0, 0, 0, 0},
+        {15, 3, 0, 0, 0, 0, 0, 0},
+        {20, 0, 5, 0, 0, 0, 0, 0},
+        {0, 0, 0, 8, 0, 0, 0, 0},
+        {0, 0, 3, 8, 0, 0, 0, 0},
+        {3, 1, 0, 5, 0, 0, 0, 0},
+        {0, 0, 0, 0, 1, 0, 0, 0},
+        {0, 0, 3, 0, 3, 0, 0, 0},
+        {0, 0, 0, 8, 3, 0, 0, 0},
+        {3, 0, 0, 0, 0, 0, 5, 0},
+        {5, 0, 2, 8, 1, 0, 5, 0},
+        {0, 0, 0, 0, 0, 0, 0, 1}
     };
 
     memcpy(world->waves, waves, sizeof(world->waves));

@@ -123,6 +123,7 @@ typedef enum enemy_type {
     CHARGER,
     CHARGER_WEAKPOINT,
     TESLA,
+    BOSS,
     ENEMY_COUNT
 } enemy_type;
 
@@ -262,6 +263,43 @@ typedef struct tesla_collective_data {
     int tesla_count;
 } tesla_collective_data;
 
+typedef enum boss_state {
+    BOSS_ONE,
+    BOSS_TWO,
+    BOSS_THREE
+} boss_state;
+
+typedef enum boss_attacks {
+    BOSS_HORIZONTAL_LASER,
+    BOSS_VERTICAL_LASER,
+    BOSS_T_LASER,
+    BOSS_RANDOM_BARRAGE,
+    BOSS_FOCUS_BARRAGE,
+    BOSS_LASER_WEB,
+    BOSS_TOTAL_ATTACKS
+} boss_attacks;
+
+typedef struct boss_random_barrage_data {
+    double interval;
+} boss_random_barrage_data;
+
+typedef struct boss_focus_barrage_data {
+    double interval;
+} boss_focus_barrage_data;
+
+typedef struct boss_attack_data {
+    double duration;
+    boss_random_barrage_data random_barrage;
+    boss_focus_barrage_data focus_barrage;
+} boss_attack_data;
+
+typedef struct boss_data {
+    boss_state state;
+    double health;
+    double bomber_cooldown;
+    boss_attack_data attacks[BOSS_TOTAL_ATTACKS];
+} boss_data;
+
 struct enemy {
     bool is_active;
     bool should_count_towards_kills;
@@ -280,6 +318,7 @@ struct enemy {
     struct drone_data drone;
     struct charger_data charger;
     struct tesla_data tesla;
+    struct boss_data boss;
 };
 
 typedef struct enemies {

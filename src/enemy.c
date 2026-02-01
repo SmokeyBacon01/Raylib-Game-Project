@@ -5,6 +5,7 @@
 #include "entity.h"
 #include "world.h"
 #include "enemy.h"
+#include "boss.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,6 +90,10 @@ void create_enemy(game_world *world, enemy *enemy, enemy_type type) {
             break;
         case TESLA:
             create_tesla(world, enemy);
+            break;
+        case BOSS:
+            create_boss(enemy);
+            break;
     }
 }
 
@@ -148,6 +153,9 @@ void update_enemies(game_world *world, time *time) {
                 break;
             case TESLA:
                 update_tesla(world, enemy, time);
+                break;
+            case BOSS:
+                update_boss(world, enemy, time);
                 break;
         }
         update_counter(&enemy->hitbox.invincible_duration, time);
