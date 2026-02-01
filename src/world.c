@@ -25,6 +25,9 @@ void draw_debug(time time, game_world *world) {
     DrawText(TextFormat("DEATHS: %d", world->player.deaths), 10, n, 20, BLACK);
     n += 40;
 
+    DrawText(TextFormat("Hurtbox count: %d", world->objects.hurtbox_count), 10, n, 20, BLACK);
+    n += 40;
+
     DrawText(TextFormat("Boss health: %.2lf", world->objects.enemies.list[0].boss.health), 10, n, 20, BLACK);
     n += 40;
 
@@ -472,7 +475,7 @@ void initialise_hitboxes(world_objects *objects) {
 
 void draw_hurtboxes(world_objects *objects) {
     for (int i = 0; i < objects->hurtbox_count; i++) {
-        if(objects->hurtbox_count >= MAX_HURTBOXES) {
+        if (i == MAX_HURTBOXES) {
             break;
         }
         hurtbox hurtbox = objects->hurtboxes[i];

@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     if (argc != 1) {
         InitWindow(800, 500, "debug");  
     } else {
-        SetConfigFlags(FLAG_FULLSCREEN_MODE);
+        SetConfigFlags(FLAG_BORDERLESS_WINDOWED_MODE);
         InitWindow(0, 0, "raylib");
     }
 
