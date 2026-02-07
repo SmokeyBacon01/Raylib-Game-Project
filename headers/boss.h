@@ -26,8 +26,4 @@ void begin_focus_barrage(enemy *enemy);
 void update_focus_barrage(game_world *world, enemy *enemy, time *time);
 void focus_barrage(game_world *world);
 
-void begin_laser_web(game_world *world, enemy *enemy);
-void laser_web(game_world *world);
-
-
 #endif

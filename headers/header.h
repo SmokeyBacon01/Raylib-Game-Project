@@ -275,7 +275,6 @@ typedef enum boss_attacks {
     BOSS_T_LASER,
     BOSS_RANDOM_BARRAGE,
     BOSS_FOCUS_BARRAGE,
-    BOSS_LASER_WEB,
     BOSS_TOTAL_ATTACKS
 } boss_attacks;
 

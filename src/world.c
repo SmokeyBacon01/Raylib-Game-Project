@@ -427,7 +427,6 @@ void initialise_world(game_world *world, time *time) {
     initialise_waves(world);
 
     show_title(world, TITLE_CARD);
-    
 }
 
 void initialise_player(player *player) {

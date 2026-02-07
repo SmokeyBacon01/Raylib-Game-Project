@@ -72,7 +72,7 @@ void debug_boss_attacks(game_world *world) {
     }
 
     if (IsKeyPressed(KEY_FIVE)) {
-        begin_laser_web(world, &world->objects.enemies.list[0]);
+
     }
 }
 
@@ -87,28 +87,9 @@ void update_boss(game_world *world, enemy *enemy, time *time) {
     debug_boss_attacks(world);
 }
 
-
-void begin_laser_web(game_world *world, enemy *enemy) {
-    enemy->boss.attacks[BOSS_LASER_WEB].duration = BOSS_LASER_WEB_DURATION;
-    laser_web(world);
-}
-
-void laser_web(game_world *world) {
-    Vector2 last_point;
-    last_point.x = GetRandomValue(-MAP_SIZE, MAP_SIZE);
-    last_point.y = GetRandomValue(-MAP_SIZE, MAP_SIZE);
-    
-    Vector2 first_point = last_point;
-    for (int i = 0; i < BOSS_LASER_WEB_NODE_COUNT; i++) {
-        Vector2 current_point;
-        current_point.x = GetRandomValue(-MAP_SIZE, MAP_SIZE);
-        current_point.y = GetRandomValue(-MAP_SIZE, MAP_SIZE);
-        create_line_hurtbox(&world->objects, last_point, current_point, BOSS_TELEGRAPH, BOSS_LASER_WEB_DURATION);
-
-        last_point = current_point;
-    }
-
-    create_line_hurtbox(&world->objects, last_point, first_point, BOSS_TELEGRAPH, BOSS_LASER_WEB_DURATION);
+// fires a ball that releases 3 pellets towards the player. Ball is fired from an edge. Once close enough, fire the shots.
+void begin_shotgun_ball(enemy *enemy) {
+    enemy->boss.attacks[BOSS_SHOTGUN_BALL].duration = BOSS_SHOTGUN_BALL_DURATION;
 }
 
 void begin_focus_barrage(enemy *enemy) {
@@ -162,7 +143,7 @@ void random_barrage(game_world *world) {
     barrage.centre.y = GetRandomValue(-MAP_SIZE + BOSS_RANDOM_BARRAGE_ATTACK_RADIUS, MAP_SIZE - BOSS_RANDOM_BARRAGE_ATTACK_RADIUS);
     barrage.radius = BOSS_RANDOM_BARRAGE_ATTACK_RADIUS;
 
-    create_circle_hurtbox(&world->objects, barrage.centre, barrage.radius, BOSS_TELEGRAPH, BOSS_RANDOM_BARRAGE_ATTACK_DURATION);
+    create_circle_hurtbox(&world->objects, barrage.centre, barrage.radius, BOSS_RANDOM_BARRAGE_TELEGRAPH, BOSS_RANDOM_BARRAGE_ATTACK_DURATION);
 }
 
 void begin_vertical_laser(game_world *world, enemy *enemy) {
